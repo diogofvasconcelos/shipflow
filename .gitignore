@@ -1,0 +1,35 @@
+# Node
+node_modules/
+dist/
+build/
+.env
+.env.local
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+.pytest_cache/
+.ruff_cache/
+*.egg-info/
+.coverage
+
+# Runtime data (label PDFs land here)
+backend/data/labels/*
+!backend/data/labels/.gitkeep
+
+# Docker
+*.log
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Local-only planning/study docs (portfolio repo — kept on this machine only)
+docs/ORCHESTRATION.md
+docs/STUDY_GUIDE.md

@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}ShipFlow{% endblock %}</title>
+  <link rel="stylesheet" href="/static/pico.min.css">
+  <script src="/static/htmx.min.js" defer></script>
+  <style>
+    .badge-warn { background: #fff3cd; color: #7a5c00; padding: 0.15rem 0.5rem; border-radius: 4px; }
+    .badge-error { background: #fde2e2; color: #8a1f1f; padding: 0.15rem 0.5rem; border-radius: 4px; }
+  </style>
+  {% block head %}{% endblock %}
+</head>
+<body>
+  <header class="container">
+    <nav>
+      <ul>
+        <li><strong>ShipFlow</strong></li>
+      </ul>
+      {% block nav %}{% endblock %}
+    </nav>
+  </header>
+  <main class="container">
+    {% block content %}{% endblock %}
+  </main>
+</body>
+</html>
