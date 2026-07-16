@@ -268,7 +268,7 @@ Alternatives (schema-per-tenant, database-per-tenant) add operational cost that 
 tenants never justify; PG row-level security adds policy complexity we don't need when
 all access goes through one codepath.
 
-How isolation is enforced — three rules, no exceptions:
+How isolation is enforced — three rules, two narrow exceptions:
 
 1. **Resolution**: `tenant_id` comes from the authenticated session (the `users` row),
    never from a query param or form field. For webhooks (no session), tenant is
@@ -277,9 +277,23 @@ How isolation is enforced — three rules, no exceptions:
 2. **Repositories require tenancy**: every repository method for tenant-owned tables
    takes `tenant_id` as its first argument and includes it in the WHERE clause.
    There is no `get(id)` without tenant — a cross-tenant id guess returns 404.
+
+   *Exception* (`app/repositories/user.py`): two module-level functions,
+   `find_user_for_login(session, email)` and `get_user_by_id(session, user_id)`,
+   look up users without a `tenant_id` — because at that point in the request
+   there isn't one yet. `POST /login` only has an email/password, and the
+   session cookie (`app/api/deps.py::require_user`) carries only `user_id`
+   (never `tenant_id` — set once at login, never trusted from elsewhere). Both
+   are the same "resolve tenant from a trusted, server-derived value" pattern
+   as rule 1's webhook routing, just applied to the login/session boundary
+   instead of the webhook boundary. Every other `UserRepository` method keeps
+   the tenant_id-first rule.
 3. **Uniqueness is per tenant** (`UNIQUE(tenant_id, meli_order_id)` etc.), except
    `meli_accounts.meli_user_id` which is globally unique (an ML account belongs to
    exactly one tenant — this is also what makes webhook routing unambiguous).
+   `users.email` is unique per tenant only (`UNIQUE(tenant_id, email)`), so in the
+   rare case the same email is registered under two tenants, login resolves to
+   whichever row is found first — acceptable for the current 2-tenant scale.
 
 Background jobs receive explicit ids (`webhook_event_id`, `batch_id`) and re-derive
 `tenant_id` from the row — jobs never trust a tenant id passed in from outside.
@@ -583,6 +597,8 @@ transaction identically whether the hub is up, down, or not yet built.
 ## 12. Configuration (env vars)
 
 ```
+ENV=dev|prod
+LOG_LEVEL=INFO               # stdlib logging level for the JSON formatter (app/core/logging.py)
 DATABASE_URL, REDIS_URL
 SECRET_KEY                  # sessions + OAuth state signing
 TOKEN_ENCRYPTION_KEY        # Fernet key for ML tokens
@@ -590,7 +606,6 @@ MELI_CLIENT_ID, MELI_CLIENT_SECRET, MELI_REDIRECT_URI
 BASE_URL                    # public HTTPS base (webhook + OAuth callback)
 EVENTHUB_ENABLED=false, EVENTHUB_URL=, EVENTHUB_TOKEN=
 DISPLAY_TZ=America/Sao_Paulo
-ENV=dev|prod
 LABEL_STORAGE_DIR=./data/labels
 TEMPLATES_DIR=../frontend/templates  # relative to backend/, see repo layout in CLAUDE.md
 STATIC_DIR=../frontend/static        # vendored pico.min.css + htmx.min.js, mounted at /static
