@@ -3,6 +3,7 @@ from fastapi.responses import JSONResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from starlette.middleware.sessions import SessionMiddleware
 
+from app.api.accounts import router as accounts_router
 from app.api.auth import router as auth_router
 from app.api.deps import AdminRequired, AuthenticationRequired
 from app.api.health import router as health_router
@@ -53,6 +54,7 @@ def create_app() -> FastAPI:
     app.include_router(health_router)
     app.include_router(tenants_router)
     app.include_router(auth_router)
+    app.include_router(accounts_router)
 
     # Vendored CSS/JS only — label PDFs are never served from here (ARCHITECTURE §11).
     app.mount("/static", StaticFiles(directory=settings.static_dir), name="static")

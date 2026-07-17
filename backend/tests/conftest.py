@@ -1,11 +1,28 @@
+import pytest
 import pytest_asyncio
+from cryptography.fernet import Fernet
 from httpx import ASGITransport, AsyncClient
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 from sqlalchemy.pool import StaticPool
 
 import app.models  # noqa: F401 - registers every model on Base.metadata
+from app.core.config import get_settings
 from app.core.db import Base, get_db
 from app.main import create_app
+
+
+@pytest.fixture(autouse=True)
+def _valid_token_encryption_key():
+    """The default TOKEN_ENCRYPTION_KEY ("changeme") isn't a valid Fernet key.
+    get_settings() is an lru_cache singleton, so mutating the one instance
+    here fixes every module that calls get_settings() (crypto.py included)
+    for the duration of the test.
+    """
+    settings = get_settings()
+    original = settings.token_encryption_key
+    settings.token_encryption_key = Fernet.generate_key().decode()
+    yield
+    settings.token_encryption_key = original
 
 
 @pytest_asyncio.fixture

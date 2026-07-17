@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+{% block title %}Contas ML — ShipFlow{% endblock %}
+{% block content %}
+<hgroup>
+  <h1>Contas Mercado Livre</h1>
+  <p>Contas conectadas e saúde do token de acesso.</p>
+</hgroup>
+
+<a role="button" href="/api/meli/oauth/start">Conectar conta ML</a>
+
+{% if accounts %}
+<table>
+  <thead>
+    <tr>
+      <th>Apelido</th>
+      <th>Site</th>
+      <th>Status</th>
+      <th>Token expira em</th>
+      <th>Último refresh</th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for account in accounts %}
+    <tr id="account-{{ account.id }}">
+      <td>{{ account.nickname }}</td>
+      <td>{{ account.site_id }}</td>
+      <td>
+        {% if account.status == "reauth_required" %}
+          <span class="badge-error">Reconectar conta</span>
+        {% elif account.status == "disabled" %}
+          Desativada
+        {% else %}
+          Ativa
+        {% endif %}
+      </td>
+      <td>{{ account.access_token_expires_at }}</td>
+      <td>{{ account.last_refresh_at or "—" }}</td>
+      <td>
+        <button
+          hx-delete="/api/accounts/{{ account.id }}"
+          hx-target="#account-{{ account.id }}"
+          hx-swap="delete"
+          hx-confirm="Desconectar esta conta ML?"
+        >
+          Desconectar
+        </button>
+      </td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% else %}
+<p>Nenhuma conta conectada.</p>
+{% endif %}
+{% endblock %}

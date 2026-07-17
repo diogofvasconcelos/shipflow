@@ -5,7 +5,8 @@ Every model MUST be imported here so Base.metadata sees it (Alembic
 autogenerate and the test fixtures both rely on this).
 """
 
+from app.models.meli_account import MeliAccount
 from app.models.tenant import Tenant
 from app.models.user import User
 
-__all__ = ["Tenant", "User"]
+__all__ = ["MeliAccount", "Tenant", "User"]
