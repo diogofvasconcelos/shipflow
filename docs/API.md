@@ -34,7 +34,7 @@
 | `GET /api/meli/oauth/start` | 302 to ML authorization URL; signed `state` carries `tenant_id`+nonce |
 | `GET /api/meli/oauth/callback?code&state` | Verifies `state`, exchanges code, upserts account → redirect `/accounts?connected=1`. Failure → `/accounts?error=…` |
 | `GET /api/accounts` | List (JSON below) |
-| `POST /api/accounts/{id}/refresh` | Force token refresh (health check). 200 → account JSON; 409 `{"code":"reauth_required"}` |
+| `POST /api/accounts/{id}/refresh` | Force token refresh (health check). 200 → account JSON; 409 `{"code":"reauth_required"}`; 502 `{"code":"meli_unavailable"}` when ML itself errors/is unreachable |
 | `DELETE /api/accounts/{id}` | Sets `status='disabled'` (soft; historical orders keep FK) |
 
 ```json

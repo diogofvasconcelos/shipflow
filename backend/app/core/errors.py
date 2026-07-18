@@ -23,3 +23,8 @@ class NotFoundError(AppError):
 class ConflictError(AppError):
     status_code = 409
     code = "conflict"
+
+
+class UpstreamError(AppError):
+    status_code = 502
+    code = "upstream_error"

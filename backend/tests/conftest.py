@@ -26,7 +26,7 @@ def _valid_token_encryption_key():
 
 
 @pytest_asyncio.fixture
-async def db_session():
+async def db_engine():
     engine = create_async_engine(
         "sqlite+aiosqlite://",
         connect_args={"check_same_thread": False},
@@ -35,11 +35,22 @@ async def db_session():
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
 
-    session_factory = async_sessionmaker(engine, expire_on_commit=False, class_=AsyncSession)
-    async with session_factory() as session:
-        yield session
+    yield engine
 
     await engine.dispose()
+
+
+@pytest.fixture
+def db_session_factory(db_engine):
+    """Session factory bound to the test engine — inject into components that
+    open their own sessions (e.g. MeliClient token refresh)."""
+    return async_sessionmaker(db_engine, expire_on_commit=False, class_=AsyncSession)
+
+
+@pytest_asyncio.fixture
+async def db_session(db_session_factory):
+    async with db_session_factory() as session:
+        yield session
 
 
 @pytest_asyncio.fixture

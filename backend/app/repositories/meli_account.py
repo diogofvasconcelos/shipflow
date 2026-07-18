@@ -90,6 +90,14 @@ class MeliAccountRepository:
             return None
         return decrypt_token(account.access_token_enc), decrypt_token(account.refresh_token_enc)
 
+    async def set_status(self, tenant_id: int, account_id: int, status: str) -> MeliAccount | None:
+        account = await self.get(tenant_id, account_id)
+        if account is None:
+            return None
+        account.status = status
+        await self.session.flush()
+        return account
+
     async def disable(self, tenant_id: int, account_id: int) -> MeliAccount | None:
         account = await self.get(tenant_id, account_id)
         if account is None:
@@ -110,3 +118,19 @@ async def get_account_by_meli_user_id(
         select(MeliAccount).where(MeliAccount.meli_user_id == meli_user_id)
     )
     return result.scalar_one_or_none()
+
+
+async def list_accounts_expiring_before(
+    session: AsyncSession, cutoff: datetime
+) -> list[MeliAccount]:
+    """Cross-tenant by the nature of background jobs (ARCHITECTURE §5, last
+    paragraph): the refresh_stale_tokens cron sweeps every active account and
+    re-derives each tenant from the row itself.
+    """
+    result = await session.execute(
+        select(MeliAccount).where(
+            MeliAccount.status == "active",
+            MeliAccount.access_token_expires_at < cutoff,
+        )
+    )
+    return list(result.scalars().all())

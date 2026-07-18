@@ -44,13 +44,6 @@ select = ["E", "F", "I", "UP", "B"]
 asyncio_mode = "auto"
 testpaths = ["tests"]
 
-[tool.coverage.run]
-omit = [
-    # Import-target stubs whose implementation + tests land in later tasks.
-    # Remove each line when its task merges: T3 = meli client, T5 = worker registry.
-    "app/integrations/meli/*",
-    "app/workers/*",
-]
 
 [build-system]
 requires = ["setuptools>=68"]

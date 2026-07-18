@@ -1,6 +1,8 @@
 """Fernet encryption for ML tokens at rest (see docs/ARCHITECTURE.md §6.1, §11).
-Used exclusively by app/repositories/meli_account.py (task T2) — never call this
-outside that boundary; tokens must never be decrypted anywhere else.
+Exactly two legitimate call sites: app/repositories/meli_account.py (encrypt on
+write, decrypt for the client) and app/integrations/meli/client.py (decrypt for
+auth headers — CLAUDE.md: "decrypted only inside the meli client"). Never call
+this anywhere else; tokens must never be decrypted outside those boundaries.
 """
 
 from cryptography.fernet import Fernet

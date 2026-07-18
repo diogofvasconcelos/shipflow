@@ -1,13 +1,26 @@
+from collections.abc import AsyncIterator
 from typing import Annotated
 
 from fastapi import Depends, Request
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.db import get_db
+from app.integrations.meli.client import MeliClient
 from app.models.user import User
 from app.repositories.user import get_user_by_id
 
 DbSession = Annotated[AsyncSession, Depends(get_db)]
+
+
+async def get_meli_client() -> AsyncIterator[MeliClient]:
+    client = MeliClient()
+    try:
+        yield client
+    finally:
+        await client.aclose()
+
+
+MeliClientDep = Annotated[MeliClient, Depends(get_meli_client)]
 
 
 class AuthenticationRequired(Exception):

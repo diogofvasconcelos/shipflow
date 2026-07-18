@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Request, Response
 from fastapi.templating import Jinja2Templates
 
-from app.api.deps import CurrentUser, DbSession
+from app.api.deps import CurrentUser, DbSession, MeliClientDep
 from app.core.config import get_settings
 from app.schemas.meli_account import MeliAccountRead
 from app.services.meli_account import MeliAccountService
@@ -20,6 +20,14 @@ async def accounts_page(request: Request, user: CurrentUser, session: DbSession)
 async def list_accounts(user: CurrentUser, session: DbSession) -> dict:
     accounts = await MeliAccountService(session).list_accounts(user.tenant_id)
     return {"items": [MeliAccountRead.model_validate(a) for a in accounts]}
+
+
+@router.post("/api/accounts/{account_id}/refresh", response_model=MeliAccountRead)
+async def refresh_account(
+    account_id: int, user: CurrentUser, session: DbSession, client: MeliClientDep
+) -> MeliAccountRead:
+    account = await MeliAccountService(session).force_refresh(user.tenant_id, account_id, client)
+    return MeliAccountRead.model_validate(account)
 
 
 @router.delete("/api/accounts/{account_id}", response_model=MeliAccountRead)
