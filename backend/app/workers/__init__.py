@@ -4,10 +4,11 @@ Jobs are added task by task (T5 onward in docs/ORCHESTRATION.md). Each job is a
 thin wrapper that calls into app.services — no business logic lives here.
 """
 
-from arq import cron
+from arq import cron, func
 from arq.connections import RedisSettings
 
 from app.core.config import get_settings
+from app.workers.notifications import process_meli_notification
 from app.workers.tokens import refresh_stale_tokens
 
 settings = get_settings()
@@ -22,7 +23,7 @@ async def shutdown(ctx: dict) -> None:
 
 
 class WorkerSettings:
-    functions: list = []
+    functions: list = [func(process_meli_notification, max_tries=5)]
     cron_jobs: list = [cron(refresh_stale_tokens, minute={0, 30})]
     on_startup = startup
     on_shutdown = shutdown

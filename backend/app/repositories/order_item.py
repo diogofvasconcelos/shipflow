@@ -1,6 +1,6 @@
 from decimal import Decimal
 
-from sqlalchemy import select
+from sqlalchemy import delete, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.order_item import OrderItem
@@ -19,6 +19,16 @@ class OrderItemRepository:
             )
         )
         return list(result.scalars().all())
+
+    async def delete_by_order(self, tenant_id: int, order_id: int) -> None:
+        """Ingestion replaces an order's items wholesale (delete + recreate). Only
+        reached when an order genuinely changed, since repeat notifications hit the
+        stale-skip before any item work happens (T6)."""
+        await self.session.execute(
+            delete(OrderItem).where(
+                OrderItem.tenant_id == tenant_id, OrderItem.order_id == order_id
+            )
+        )
 
     async def create(
         self,

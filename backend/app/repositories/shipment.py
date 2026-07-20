@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -26,8 +28,37 @@ class ShipmentRepository:
         )
         return result.scalar_one_or_none()
 
-    async def upsert_shipment_from_payload(
-        self, tenant_id: int, meli_account_id: int, payload: dict
+    async def upsert(
+        self,
+        tenant_id: int,
+        meli_account_id: int,
+        *,
+        meli_shipment_id: int,
+        meli_status: str,
+        raw: dict,
+        meli_substatus: str | None = None,
+        logistic_type: str | None = None,
+        carrier_name: str | None = None,
+        tracking_number: str | None = None,
+        handling_limit_at: datetime | None = None,
     ) -> Shipment:
-        """Implemented in T6 — see docs/ORCHESTRATION.md."""
-        raise NotImplementedError("Implemented in T6 — see docs/ORCHESTRATION.md")
+        """Insert or update by (tenant_id, meli_shipment_id). Idempotent, so a pack
+        of N orders that share one shipment all converge to the same row."""
+        shipment = await self.get_by_meli_shipment_id(tenant_id, meli_shipment_id)
+        if shipment is None:
+            shipment = Shipment(
+                tenant_id=tenant_id,
+                meli_account_id=meli_account_id,
+                meli_shipment_id=meli_shipment_id,
+            )
+            self.session.add(shipment)
+
+        shipment.meli_status = meli_status
+        shipment.meli_substatus = meli_substatus
+        shipment.logistic_type = logistic_type
+        shipment.carrier_name = carrier_name
+        shipment.tracking_number = tracking_number
+        shipment.handling_limit_at = handling_limit_at
+        shipment.raw = raw
+        await self.session.flush()
+        return shipment

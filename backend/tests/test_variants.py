@@ -106,12 +106,6 @@ async def test_variant_of_tenant_a_is_invisible_via_tenant_b_repository_call(
     assert await repo.get_by_meli_item_variation(tenant_a.id, "MLB5", 0) is not None
 
 
-async def test_variant_upsert_stub_raises_not_implemented(db_session: AsyncSession):
-    tenant = await _create_tenant(db_session, "loja-var-j")
-    with pytest.raises(NotImplementedError):
-        await VariantRepository(db_session).upsert_variant_from_payload(tenant.id, {})
-
-
 # --- variant_barcodes ----------------------------------------------------------------
 
 

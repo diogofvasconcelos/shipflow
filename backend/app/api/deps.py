@@ -1,6 +1,7 @@
 from collections.abc import AsyncIterator
 from typing import Annotated
 
+from arq.connections import ArqRedis
 from fastapi import Depends, Request
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -10,6 +11,16 @@ from app.models.user import User
 from app.repositories.user import get_user_by_id
 
 DbSession = Annotated[AsyncSession, Depends(get_db)]
+
+
+async def get_arq_pool(request: Request) -> ArqRedis:
+    """The shared Arq/Redis pool created in the app lifespan (see app.main).
+    Overridden in tests with a fake pool.
+    """
+    return request.app.state.arq_pool
+
+
+ArqPoolDep = Annotated[ArqRedis, Depends(get_arq_pool)]
 
 
 async def get_meli_client() -> AsyncIterator[MeliClient]:

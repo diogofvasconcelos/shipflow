@@ -1,0 +1,11 @@
+{
+  "id": 44444444444,
+  "status": "ready_to_ship",
+  "substatus": "ready_to_print",
+  "logistic_type": "drop_off",
+  "tracking_number": "AA123456789BR",
+  "tracking_method": "Correios",
+  "lead_time": {
+    "estimated_handling_limit": {"date": "2026-07-14T16:00:00.000-03:00"}
+  }
+}

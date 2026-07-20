@@ -1,0 +1,28 @@
+{
+  "id": 2000003508419500,
+  "status": "paid",
+  "date_created": "2026-07-13T13:55:00.000-03:00",
+  "date_last_updated": "2026-07-13T14:00:00.000-03:00",
+  "total_amount": 289.9,
+  "currency_id": "BRL",
+  "pack_id": null,
+  "buyer": {"nickname": "COMPRADOR123"},
+  "shipping": {"id": 44444444444},
+  "order_items": [
+    {
+      "item": {
+        "id": "MLB3333333333",
+        "title": "Tênis Runner Masculino Preto",
+        "variation_id": 181052026853,
+        "seller_sku": "RUN-PTO",
+        "seller_custom_field": "RUN-PTO",
+        "variation_attributes": [
+          {"id": "SIZE", "name": "Tamanho", "value_name": "41"}
+        ],
+        "thumbnail": "https://http2.mlstatic.com/thumb.jpg"
+      },
+      "quantity": 1,
+      "unit_price": 289.9
+    }
+  ]
+}

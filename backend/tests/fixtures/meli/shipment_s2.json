@@ -1,0 +1,11 @@
+{
+  "id": 55555555555,
+  "status": "ready_to_ship",
+  "substatus": "ready_to_print",
+  "logistic_type": "cross_docking",
+  "tracking_number": "BB987654321BR",
+  "tracking_method": "Loggi",
+  "lead_time": {
+    "estimated_handling_limit": {"date": "2026-07-14T18:00:00.000-03:00"}
+  }
+}

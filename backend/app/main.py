@@ -1,3 +1,7 @@
+from contextlib import asynccontextmanager
+
+from arq import create_pool
+from arq.connections import RedisSettings
 from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
@@ -9,6 +13,7 @@ from app.api.deps import AdminRequired, AuthenticationRequired
 from app.api.health import router as health_router
 from app.api.oauth import router as oauth_router
 from app.api.tenants import router as tenants_router
+from app.api.webhooks import router as webhooks_router
 from app.core.config import get_settings
 from app.core.errors import AppError
 from app.core.logging import configure_logging
@@ -16,10 +21,22 @@ from app.core.logging import configure_logging
 settings = get_settings()
 
 
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # Shared Arq/Redis pool: the webhook handler enqueues jobs on it AND uses it
+    # for the dedup SET NX (ArqRedis is a redis.asyncio.Redis subclass), so one
+    # pool covers both. Tests override the get_arq_pool dependency instead.
+    app.state.arq_pool = await create_pool(RedisSettings.from_dsn(settings.redis_url))
+    try:
+        yield
+    finally:
+        await app.state.arq_pool.aclose()
+
+
 def create_app() -> FastAPI:
     configure_logging(settings.log_level)
 
-    app = FastAPI(title="ShipFlow")
+    app = FastAPI(title="ShipFlow", lifespan=lifespan)
 
     app.add_middleware(
         SessionMiddleware,
@@ -57,6 +74,7 @@ def create_app() -> FastAPI:
     app.include_router(auth_router)
     app.include_router(accounts_router)
     app.include_router(oauth_router)
+    app.include_router(webhooks_router)
 
     # Vendored CSS/JS only — label PDFs are never served from here (ARCHITECTURE §11).
     app.mount("/static", StaticFiles(directory=settings.static_dir), name="static")

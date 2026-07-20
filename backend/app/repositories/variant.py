@@ -56,6 +56,32 @@ class VariantRepository:
         await self.session.flush()
         return variant
 
-    async def upsert_variant_from_payload(self, tenant_id: int, payload: dict) -> Variant:
-        """Implemented in T6 — see docs/ORCHESTRATION.md."""
-        raise NotImplementedError("Implemented in T6 — see docs/ORCHESTRATION.md")
+    async def upsert(
+        self,
+        tenant_id: int,
+        *,
+        meli_item_id: str,
+        variation_id: int = 0,
+        model_name: str,
+        size: str | None = None,
+        seller_sku: str | None = None,
+    ) -> Variant:
+        """Find-or-create by (tenant_id, meli_item_id, variation_id). New rows get
+        an internal_code via create(); existing rows have their editable fields
+        refreshed from the latest order data.
+        """
+        variant = await self.get_by_meli_item_variation(tenant_id, meli_item_id, variation_id)
+        if variant is None:
+            return await self.create(
+                tenant_id,
+                meli_item_id=meli_item_id,
+                variation_id=variation_id,
+                model_name=model_name,
+                size=size,
+                seller_sku=seller_sku,
+            )
+        variant.model_name = model_name
+        variant.size = size
+        variant.seller_sku = seller_sku
+        await self.session.flush()
+        return variant

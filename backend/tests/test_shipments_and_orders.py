@@ -85,13 +85,6 @@ async def test_shipment_of_tenant_a_is_invisible_via_tenant_b_repository_call(
     assert await repo.get_by_meli_shipment_id(tenant_a.id, 555555) is not None
 
 
-async def test_shipment_upsert_stub_raises_not_implemented(db_session: AsyncSession):
-    tenant, account = await _create_tenant_with_account(db_session, "loja-ship-d", 114)
-
-    with pytest.raises(NotImplementedError):
-        await ShipmentRepository(db_session).upsert_shipment_from_payload(tenant.id, account.id, {})
-
-
 # --- orders ------------------------------------------------------------------------
 
 
@@ -161,13 +154,6 @@ async def test_order_of_tenant_a_is_invisible_via_tenant_b_repository_call(
     fetched = await repo.get_by_meli_order_id(tenant_a.id, 2000000000002)
     assert fetched is not None
     assert fetched.currency == "BRL"
-
-
-async def test_order_upsert_stub_raises_not_implemented(db_session: AsyncSession):
-    tenant, account = await _create_tenant_with_account(db_session, "loja-order-d", 214)
-
-    with pytest.raises(NotImplementedError):
-        await OrderRepository(db_session).upsert_order_from_payload(tenant.id, account.id, {})
 
 
 # --- order_items --------------------------------------------------------------------

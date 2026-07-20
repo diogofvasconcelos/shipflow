@@ -1,0 +1,26 @@
+{
+  "id": 2000003508419602,
+  "status": "paid",
+  "date_created": "2026-07-13T10:01:00.000-03:00",
+  "date_last_updated": "2026-07-13T10:06:00.000-03:00",
+  "total_amount": 99.9,
+  "currency_id": "BRL",
+  "pack_id": 2000000999999,
+  "buyer": {"nickname": "COMPRADOR_PACK"},
+  "shipping": {"id": 55555555555},
+  "order_items": [
+    {
+      "item": {
+        "id": "MLB2222222222",
+        "title": "Palmilha Gel Conforto",
+        "variation_id": 100000000002,
+        "seller_sku": "PALM-GEL",
+        "variation_attributes": [
+          {"id": "SIZE", "name": "Tamanho", "value_name": "42"}
+        ]
+      },
+      "quantity": 2,
+      "unit_price": 49.95
+    }
+  ]
+}

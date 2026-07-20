@@ -1,0 +1,26 @@
+{
+  "id": 2000003508419601,
+  "status": "paid",
+  "date_created": "2026-07-13T10:00:00.000-03:00",
+  "date_last_updated": "2026-07-13T10:05:00.000-03:00",
+  "total_amount": 150.0,
+  "currency_id": "BRL",
+  "pack_id": 2000000999999,
+  "buyer": {"nickname": "COMPRADOR_PACK"},
+  "shipping": {"id": 55555555555},
+  "order_items": [
+    {
+      "item": {
+        "id": "MLB1111111111",
+        "title": "Meia Cano Alto Preta",
+        "variation_id": 100000000001,
+        "seller_sku": "MEIA-PTA",
+        "variation_attributes": [
+          {"id": "SIZE", "name": "Tamanho", "value_name": "39"}
+        ]
+      },
+      "quantity": 1,
+      "unit_price": 150.0
+    }
+  ]
+}
