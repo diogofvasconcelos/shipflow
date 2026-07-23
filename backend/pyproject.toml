@@ -21,6 +21,9 @@ dependencies = [
     "python-barcode>=0.15",
     "bcrypt>=4.2",
     "cryptography>=43.0",
+    # zoneinfo (stdlib) reads the IANA tz database from the OS; Windows ships none,
+    # so the display_tz conversion in templates needs this data package (T8).
+    "tzdata>=2024.1",
 ]
 
 [project.optional-dependencies]

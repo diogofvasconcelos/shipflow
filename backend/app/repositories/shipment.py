@@ -28,6 +28,15 @@ class ShipmentRepository:
         )
         return result.scalar_one_or_none()
 
+    async def list_by_ids(self, tenant_id: int, ids: list[int]) -> list[Shipment]:
+        """Batch fetch by primary key for a page of orders (list screen)."""
+        if not ids:
+            return []
+        result = await self.session.execute(
+            select(Shipment).where(Shipment.tenant_id == tenant_id, Shipment.id.in_(ids))
+        )
+        return list(result.scalars().all())
+
     async def upsert(
         self,
         tenant_id: int,

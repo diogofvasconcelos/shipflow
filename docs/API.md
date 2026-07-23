@@ -73,6 +73,19 @@ no ML API calls (ARCHITECTURE §6.2).
 | `GET /api/shipments/eligible` | Shipments eligible for a new batch (ARCHITECTURE §7.1); `?include_printed=true` adds `substatus='printed'` |
 
 ```json
+// GET /api/orders?status=&account_id=&q=&page= → 200
+// Each row carries only what the list table renders; `shipment.urgent` = handling
+// deadline under 4h (derived, drives the red badge). Full data is in the detail call.
+{"items": [
+  {"id": 42, "meli_order_id": 2000003508419500, "pack_id": null,
+   "account": {"id": 1, "nickname": "LOJA_EXEMPLO"},
+   "buyer_nickname": "COMPRADOR123", "meli_status": "paid",
+   "meli_created_at": "2026-07-13T13:55:00Z",
+   "items": [{"title": "Tênis Runner Masculino Preto", "size": "41", "quantity": 1}],
+   "shipment": {"meli_status": "ready_to_ship", "meli_substatus": "ready_to_print",
+                "handling_limit_at": "2026-07-14T16:00:00Z", "urgent": false}}],
+ "total": 1, "page": 1, "page_size": 50}
+
 // GET /api/orders/{id} → 200
 {"id": 42, "meli_order_id": 2000003508419500, "pack_id": null,
  "account": {"id": 1, "nickname": "LOJA_EXEMPLO"},

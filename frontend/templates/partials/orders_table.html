@@ -1,0 +1,55 @@
+{% set STATUS_PT = {
+  "paid": "Pago", "confirmed": "Confirmado", "payment_required": "Aguardando pagamento",
+  "payment_in_process": "Processando pagamento", "shipped": "Enviado", "cancelled": "Cancelado"
+} %}
+{% if result.items %}
+<table>
+  <thead>
+    <tr>
+      <th>Pedido</th><th>Conta</th><th>Comprador</th><th>Itens</th>
+      <th>Status</th><th>Envio</th><th>Data</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for o in result.items %}
+    <tr>
+      <td>{{ o.meli_order_id }}{% if o.pack_id %} <small>(pack)</small>{% endif %}</td>
+      <td>{{ o.account.nickname if o.account else "—" }}</td>
+      <td>{{ o.buyer_nickname or "—" }}</td>
+      <td>
+        {% for it in o.items %}
+        <div>{{ it.quantity }}× {{ it.title }}{% if it.size %} <span class="badge-warn">{{ it.size }}</span>{% endif %}</div>
+        {% else %}—{% endfor %}
+      </td>
+      <td>{{ STATUS_PT.get(o.meli_status, o.meli_status) }}</td>
+      <td>
+        {% if o.shipment %}
+          {{ o.shipment.meli_substatus or o.shipment.meli_status }}
+          {% if o.shipment.handling_limit_at %}
+          <br><span class="{{ 'badge-error' if o.shipment.urgent else 'badge-warn' }}">
+            {{ o.shipment.handling_limit_at | brdate }}
+          </span>
+          {% endif %}
+        {% else %}—{% endif %}
+      </td>
+      <td>{{ o.meli_created_at | brdate }}</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+
+{% set total_pages = ((result.total - 1) // result.page_size + 1) if result.total else 1 %}
+<footer style="display:flex; justify-content:space-between; align-items:center;">
+  <small>{{ result.total }} pedido(s) · página {{ result.page }} de {{ total_pages }}</small>
+  <div role="group">
+    <button {% if result.page <= 1 %}disabled{% endif %}
+      hx-get="/orders" hx-target="#orders-table" hx-include="#order-filters"
+      hx-vals='{"page": {{ result.page - 1 }}}'>Anterior</button>
+    <button {% if result.page >= total_pages %}disabled{% endif %}
+      hx-get="/orders" hx-target="#orders-table" hx-include="#order-filters"
+      hx-vals='{"page": {{ result.page + 1 }}}'>Próxima</button>
+  </div>
+</footer>
+{% else %}
+<p>Nenhum pedido encontrado.</p>
+{% endif %}

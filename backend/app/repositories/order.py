@@ -1,7 +1,7 @@
 from datetime import datetime
 from decimal import Decimal
 
-from sqlalchemy import select
+from sqlalchemy import String, cast, func, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.order import Order
@@ -24,6 +24,41 @@ class OrderRepository:
             select(Order).where(Order.tenant_id == tenant_id, Order.meli_order_id == meli_order_id)
         )
         return result.scalar_one_or_none()
+
+    async def list_orders(
+        self,
+        tenant_id: int,
+        *,
+        status: str | None = None,
+        account_id: int | None = None,
+        q: str | None = None,
+        page: int = 1,
+        page_size: int = 50,
+    ) -> tuple[list[Order], int]:
+        """One page of the tenant's orders plus the total match count (for
+        pagination). Newest first. `q` matches meli_order_id OR buyer_nickname;
+        `status` filters the raw meli_status. tenant_id is always in the WHERE,
+        so cross-tenant rows are simply never returned."""
+        filters = [Order.tenant_id == tenant_id]
+        if status:
+            filters.append(Order.meli_status == status)
+        if account_id:
+            filters.append(Order.meli_account_id == account_id)
+        if q:
+            like = f"%{q}%"
+            filters.append(
+                or_(cast(Order.meli_order_id, String).ilike(like), Order.buyer_nickname.ilike(like))
+            )
+
+        total = await self.session.scalar(select(func.count()).select_from(Order).where(*filters))
+        result = await self.session.execute(
+            select(Order)
+            .where(*filters)
+            .order_by(Order.meli_created_at.desc())
+            .limit(page_size)
+            .offset((page - 1) * page_size)
+        )
+        return list(result.scalars().all()), total or 0
 
     async def upsert(
         self,

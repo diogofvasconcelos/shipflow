@@ -40,6 +40,15 @@ class MeliAccountRepository:
         )
         return list(result.scalars().all())
 
+    async def list_by_ids(self, tenant_id: int, ids: list[int]) -> list[MeliAccount]:
+        """Batch fetch by primary key for a page of orders (list screen)."""
+        if not ids:
+            return []
+        result = await self.session.execute(
+            select(MeliAccount).where(MeliAccount.tenant_id == tenant_id, MeliAccount.id.in_(ids))
+        )
+        return list(result.scalars().all())
+
     async def create(
         self,
         tenant_id: int,

@@ -20,6 +20,18 @@ class OrderItemRepository:
         )
         return list(result.scalars().all())
 
+    async def list_by_orders(self, tenant_id: int, order_ids: list[int]) -> list[OrderItem]:
+        """Batch version of list_by_order — one query for a whole page of orders,
+        so the list screen doesn't fire N per-order queries."""
+        if not order_ids:
+            return []
+        result = await self.session.execute(
+            select(OrderItem).where(
+                OrderItem.tenant_id == tenant_id, OrderItem.order_id.in_(order_ids)
+            )
+        )
+        return list(result.scalars().all())
+
     async def delete_by_order(self, tenant_id: int, order_id: int) -> None:
         """Ingestion replaces an order's items wholesale (delete + recreate). Only
         reached when an order genuinely changed, since repeat notifications hit the
