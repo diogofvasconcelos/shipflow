@@ -62,3 +62,19 @@ class ShipmentRepository:
         shipment.raw = raw
         await self.session.flush()
         return shipment
+
+
+async def list_ready_to_ship_shipments(session: AsyncSession) -> list[Shipment]:
+    """Cross-tenant by the nature of background jobs (ARCHITECTURE §5, last
+    paragraph): sync_open_shipments (T7) sweeps every tenant's ready_to_ship
+    shipments and re-derives tenant_id from each row.
+
+    Scope note: ARCHITECTURE §6.3 also says "belongs to a non-terminal batch",
+    but print_batches/batch_shipments don't exist until T9 — that clause can't
+    be implemented yet. ready_to_ship is already the currently-useful bounded
+    set (shipments whose LOCAL copy might be stale because we missed a webhook
+    transition); extend this query with the batch-membership OR-clause once T9
+    lands (tracked in docs/ARCHITECTURE.md §6.3 and docs/ORCHESTRATION.md T9).
+    """
+    result = await session.execute(select(Shipment).where(Shipment.meli_status == "ready_to_ship"))
+    return list(result.scalars().all())

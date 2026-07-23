@@ -134,3 +134,12 @@ async def list_accounts_expiring_before(
         )
     )
     return list(result.scalars().all())
+
+
+async def list_active_accounts(session: AsyncSession) -> list[MeliAccount]:
+    """Cross-tenant by the nature of background jobs (ARCHITECTURE §5, last
+    paragraph): poll_orders (T7) sweeps every active account regardless of
+    tenant and re-derives tenant_id from each row.
+    """
+    result = await session.execute(select(MeliAccount).where(MeliAccount.status == "active"))
+    return list(result.scalars().all())

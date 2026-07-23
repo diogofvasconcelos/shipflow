@@ -386,8 +386,14 @@ is "nothing ships late", a missed `ready_to_print` is a silent business failure.
   deliberate: upserts are idempotent, so overlap is free insurance against clock skew.
   Cursor (`poll_cursors.orders_last_polled_at`) advances only after a fully successful
   pass.
-- `sync_open_shipments` cron, every 10 min: re-fetch every shipment in a non-terminal
-  status from the DB (bounded set) to catch missed `shipped`/`cancelled` transitions.
+- `sync_open_shipments` cron, every 10 min: re-fetch the bounded set of shipments that
+  are either `ready_to_ship` or belong to a non-terminal batch, to catch missed
+  `shipped`/`cancelled` transitions. **Staged rollout**: batch membership requires
+  `print_batches`/`batch_shipments` (T9), which don't exist when T7 ships — until then
+  the query is `ready_to_ship`-only (already a well-defined, useful subset: it catches
+  drift on shipments we still believe are printable). Extend the query with the
+  batch-membership OR-clause once T9 lands (see `list_ready_to_ship_shipments` in
+  `app/repositories/shipment.py`).
 
 One pipeline, two feeders: webhook (fast path) and poller (safety net) call the same
 service function. There is no "webhook code" vs "polling code" divergence.

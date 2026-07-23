@@ -12,6 +12,7 @@ from app.api.auth import router as auth_router
 from app.api.deps import AdminRequired, AuthenticationRequired
 from app.api.health import router as health_router
 from app.api.oauth import router as oauth_router
+from app.api.orders import router as orders_router
 from app.api.tenants import router as tenants_router
 from app.api.webhooks import router as webhooks_router
 from app.core.config import get_settings
@@ -75,6 +76,7 @@ def create_app() -> FastAPI:
     app.include_router(accounts_router)
     app.include_router(oauth_router)
     app.include_router(webhooks_router)
+    app.include_router(orders_router)
 
     # Vendored CSS/JS only — label PDFs are never served from here (ARCHITECTURE §11).
     app.mount("/static", StaticFiles(directory=settings.static_dir), name="static")

@@ -9,6 +9,7 @@ from app.models.event_outbox import EventOutbox
 from app.models.meli_account import MeliAccount
 from app.models.order import Order
 from app.models.order_item import OrderItem
+from app.models.poll_cursor import PollCursor
 from app.models.shipment import Shipment
 from app.models.tenant import Tenant
 from app.models.user import User
@@ -21,6 +22,7 @@ __all__ = [
     "MeliAccount",
     "Order",
     "OrderItem",
+    "PollCursor",
     "Shipment",
     "Tenant",
     "User",
